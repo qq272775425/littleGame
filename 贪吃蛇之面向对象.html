@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>贪吃蛇之面向对象</title>
+<style>
+	*{
+		margin: 0;
+		padding: 0;
+	}
+	#ground{
+		width: 1000px;
+		height: 500px;
+		background: #000;
+		position: relative;
+		overflow: hidden;
+	}
+	#control{
+		width: 998px;
+		height: 50px;
+		border: 1px solid #000;
+	}
+	#container{
+		width: 1000px;
+		
+		margin: 50px auto;
+		
+		
+	}
+	#banner{
+		float: left;
+		line-height: 50px;
+
+	}
+	#buttons{
+		float: right;
+		line-height: 50px;
+		width: 200px;
+		height: 50px;
+	}
+	input{
+		width: 80px;
+		height: 40px;
+		font-size: 16px;
+	}
+	#ground .block{
+		width: 20px;
+		height: 20px;
+		background: orange;
+		float: left;
+	}
+	#ground .section{
+		background: red;
+		position: absolute;
+		top: 60px;
+	}
+	#ground .food{
+		background: green;
+		position: absolute;
+	}
+	#mark{
+		height: 50px;
+		width: 150px;
+		line-height: 50px;
+		font-size: 18px;
+		display:inline-block;
+	}
+	#level{
+		height: 50px;
+		width: 150px;
+		line-height: 50px;
+		font-size: 18px;
+		display:inline-block;
+
+	}
+</style>
+</head>
+<body>
+	<div id="container">
+		<div id="ground">
+		</div>
+		<div id="control">
+			<span id="banner">贪吃蛇 by 若有若无的小矫情</span>&nbsp;&nbsp;&nbsp;&nbsp;
+			<span id="mark"></span>
+			<span id="level"></span>
+			<div id="buttons">
+				<input type="button" id="btn-start" value="开始">
+				<input type="button" id="btn-pause" value="暂停">
+				
+			</div>
+		</div>
+
+	</div>
+
+<script>
+	var snake={
+		direction:'right',
+		speed:1000,
+		body:[],
+		init:function(){
+			for (var i = 0; i < 3; i++) {
+				oSection = document.createElement('div');
+				oSection.className = ' block section';
+				ground.container.appendChild(oSection);
+				oSection.style.left = 60-20*i+'px';
+				oSection.innerHTML = i;
+				this.body.push(oSection);
+			}
+		},
+		move:function(){
+			this.head = this.body[0];
+			for (var i = snake.body.length-1; i>= 1; i--) {
+				snake.body[i].style.left = snake.body[i-1].offsetLeft+'px';
+			snake.body[i].style.top = snake.body[i-1].offsetTop+'px';
+			}
+			if (snake.direction == 'left') {
+				snake.head.style.left = snake.head.offsetLeft - 20 +'px';
+			}else if(snake.direction == 'up'){
+				snake.head.style.top = snake.head.offsetTop - 20 +'px';
+			}else if(snake.direction == 'right'){
+				snake.head.style.left = snake.head.offsetLeft + 20 +'px';
+			}else if(snake.direction == 'down'){
+				snake.head.style.top = snake.head.offsetTop + 20 +'px';
+			}
+
+			snake.eat();
+			//吃自己
+			for (var i = 4; i < snake.body.length; i++) {
+				if (snake.body[1].offsetTop ==snake.body[i].offsetTop && snake.body[1].offsetLeft == snake.body[i].offsetLeft) {
+					snake.die();
+				}
+			}
+			//撞墙
+			if (snake.head.offsetTop == 500||snake.head.offsetTop == -20||snake.head.offsetLeft == 1000||snake.head.offsetLeft == -20) {
+				snake.die();
+			}
+		},
+		eat: function(){
+			// 吃食物
+			if (this.head.offsetTop == ground.food.pos.top && this.head.offsetLeft == ground.food.pos.left) {
+				ground.food.container.className = 'block section'
+				this.body.push(ground.food.container);
+				ground.creatFood();
+			}
+		},
+		die: function(){
+				alert('GAME OVER');
+				clearInterval(timer);
+			
+				oFood.style.background = 'transparent ';
+				game.init()
+		}
+	};
+	var ground={
+		container:document.getElementById('ground'),
+		food:{
+			pos:{
+				left:0,
+				top:0
+		}
+		},
+		creatFood:function(){ 
+			do{
+				var bFlag = true;//标示位
+				// 检测食物在ground内部
+				var iRandomLeft = Math.ceil(Math.random()*980);
+				var iRandomTop = Math.ceil(Math.random()*480);
+				var iLeft = iRandomLeft-iRandomLeft%20;
+				var iTop = iRandomTop-iRandomTop%20;
+				//检测食物是否和蛇重合
+				for (var i = 0; i < snake.body.length; i++) {
+					if(snake.body[i].offsetLeft == iLeft&& snake.body[i].offsetTop == iTop){//重合
+						bFlag = false;
+						break;
+					}	
+				}
+			}while(!bFlag);
+				oFood = document.createElement('div');
+				oFood.className = 'block food ';
+				oFood.style.left = iLeft +'px';
+				oFood.style.top = iTop +'px';
+				ground.container.appendChild(oFood);
+				this.food.pos.left = iLeft;
+				this.food.pos.top = iTop;	
+				this.food.container = oFood;	
+		},
+		init:function(){
+			var ROWS = 25,
+				COLS = 50;
+			for (var i = 0; i < ROWS; i++) {
+				for (var j = 0; j < COLS; j++) {
+					var oDiv = document.createElement('div');
+	 				oDiv.className = 'block';
+	 				this.container.appendChild(oDiv);
+				}
+			}
+		}
+	};
+	var game={
+		init:function(){
+			ground.init();
+			snake.init();
+			ground.creatFood();
+			var oBtnStart = document.getElementById('btn-start');
+			var oBtnStop = document.getElementById('btn-pause');
+			oBtnStart.onclick = function(){
+				game.start();
+			};
+			oBtnStop.onclick = function(){
+				game.pause();
+			};
+
+
+			document.onkeydown = function(e){
+			e = e||window.event;
+			var key = e.which || e.keyCode;
+			switch(key){
+				case 37:
+				if (snake.direction !='right'){
+					snake.direction = 'left';
+					snake.move();
+					}
+					break;
+				case 38:
+				if (snake.direction !='down')
+					{snake.direction = 'up';
+					snake.move();
+					}
+					break;
+				case 39:
+				if (snake.direction !='left')
+					{snake.direction = 'right';
+					snake.move();
+					}
+					break;
+				case 40:
+				if (snake.direction !='up')
+					{snake.direction = 'down';
+					snake.move();
+					}
+					break;
+			}
+
+			};
+		},
+		start:function(){
+			timer = setInterval(function(){
+				for (var i = 0; i < 1; i++) {
+			    	snake.move();
+				}
+			},snake.speed);
+		},
+		pause:function(){
+			clearInterval(timer);
+		},
+		data:function(){
+			var oMark = document.getElementById('mark');
+			var oLevel = document.getElementById('level');
+			oMark.innerHTML='当前得分：'+(snake.body.length-2)*10;
+			oLevel.innerHTML='当前等级：';
+		}
+	};
+	game.init();
+
+</script>
+</body>
+</html>
